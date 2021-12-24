@@ -1,7 +1,7 @@
 begin
-  require "sentry-raven"
+  require "sentry-ruby"
 rescue LoadError
-  raise LoadError, 'Gem sentry-raven is required for logging purposes. Please add the gem "sentry-raven" to your Gemfile.'
+  raise LoadError, 'Gem sentry-ruby is required for logging purposes. Please add the gem "sentry-ruby" to your Gemfile.'
 end
 
 # Send log messages to sentry
@@ -38,15 +38,15 @@ module SemanticLogger
       #     Name of this application to appear in log messages.
       #     Default: SemanticLogger.application
       def initialize(level: :error, **args, &block)
-        # Replace the Sentry Raven logger so that we can identify its log messages and not forward them to Sentry
-        Raven.configure { |config| config.logger = SemanticLogger[Raven] }
+        # Replace the Sentry logger so that we can identify its log messages and not forward them to Sentry
+        ::Sentry.init { |config| config.logger = SemanticLogger[Sentry] }
         super(level: level, **args, &block)
       end
 
       # Send an error notification to sentry
       def log(log)
-        # Ignore logs coming from Raven itself
-        return false if log.name == "Raven"
+        # Ignore logs coming from Sentry itself
+        return false if log.name == "Sentry"
 
         context      = formatter.call(log, self)
         user         = context.delete(:user)
@@ -59,10 +59,10 @@ module SemanticLogger
         attrs[:tags] = tags if tags
         if log.exception
           context.delete(:exception)
-          Raven.capture_exception(log.exception, attrs)
+          ::Sentry.capture_exception(log.exception, **attrs)
         else
           attrs[:extra][:backtrace] = log.backtrace if log.backtrace
-          Raven.capture_message(context[:message], attrs)
+          ::Sentry.capture_message(context[:message], **attrs)
         end
         true
       end

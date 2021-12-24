@@ -6,14 +6,14 @@ module Appender
     describe SemanticLogger::Appender::Sentry do
       before do
         @appender                      = SemanticLogger::Appender::Sentry.new(level: :trace)
-        @message                       = "AppenderRavenTest log message"
+        @message                       = "AppenderSentryTest log message"
         SemanticLogger.backtrace_level = :error
       end
 
       SemanticLogger::LEVELS.each do |level|
         it "sends #{level} message" do
           error_message = hash = nil
-          Raven.stub(:capture_message, ->(msg, h) { error_message = msg; hash = h }) do
+          Sentry.stub(:capture_message, ->(msg, **h) { error_message = msg; hash = h }) do
             @appender.send(level, @message)
           end
           assert_equal @message, error_message
@@ -31,7 +31,7 @@ module Appender
         it "sends #{level} exceptions" do
           error     = RuntimeError.new("Oh no, Error.")
           exception = hash = nil
-          Raven.stub(:capture_exception, ->(exc, h) { exception = exc; hash = h }) do
+          Sentry.stub(:capture_exception, ->(exc, **h) { exception = exc; hash = h }) do
             @appender.send(level, @message, error)
           end
 

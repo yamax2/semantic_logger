@@ -34,7 +34,7 @@ gem "nokogiri"
 # [optional] Statsd metrics
 gem "statsd-ruby"
 # [optional] Sentry appender
-gem "sentry-raven"
+gem "sentry-ruby"
 # [optional] Syslog appender when communicating with a remote syslogd over TCP
 gem "syslog_protocol"
 
